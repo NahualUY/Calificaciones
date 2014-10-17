@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Nota'n'loco</title>
+    <script type="text/javascript" src="js/jquery-1.7.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+  var VAL_DECIMALS = 0;
+  var VAL_LENGTH = 1;
+  var VAL_ZERO = 2;
+  var validators = [
+                        {"valid" : function(input) {return input.length != 0 && !isNaN(input);}, "error": "El valor ingresado no es un número"},
+			{"valid" : function(input) {return is_int(input);}, "error": "Las notas son números enteros"},
+                   ];
+
+  var validators_segundo = [
+                   ];
+
+  function is_int(value){
+    if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function nota_primer_parcial(nota) {
+	if((nota>0)&&(nota<=10)){
+		return "Debe recursar :(";
+	} else if((nota>11)&&(nota<=50)){
+		return "Sigues en carrera :D";
+	}
+	return "Las notas van de 0 a 50";		
+  }
+
+  function nota_segundo_parcial(nota) {
+	if((nota>=0)&&(nota<9)){
+		return "Debe recursar :(";
+	} else if((nota>=10)&&(nota<50)){
+		return "Sigues en carrera :D";
+	}
+	return "Las notas van de 0 a 50";		
+  }
+
+  function validate(validators, value) {
+    var valid = true;
+    $(validators).each(function() {
+        if (!this.valid(value)) {
+            $("#primerParcialOutput").append(this.error + "</br>");
+            return valid = false;
+        }
+    });
+    return valid;
+  }
+
+  function validate_segundo(validators, value) {
+    var valid = true;
+    $(validators).each(function() {
+        if (!this.valid(value)) {
+            $("#segundoParcialOutput").append(this.error + "</br>");
+            return valid = false;
+        }
+    });
+    return valid;
+  }
+
+  function convert_primer_parcial() {
+    $("#primerParcialOutput").empty();
+    if(!($("#primerParcialInput").val()==="")) {
+       input = $("#primerParcialInput")[0];
+       var valid = validate(validators, input.value);
+       if (valid) {
+           $("#primerParcialOutput").append(nota_primer_parcial(input.value));
+       }
+    }
+  }
+
+  function convert_segundo_parcial() {
+    $("#segundoParcialOutput").empty();
+    if($("#segundoParcialInput").val()!=="") {
+       input = $("#segundoParcialInput")[0];
+       var valid = validate_segundo(validators_segundo, input.value);
+       if (valid) {
+           $("#segundoParcialOutput").append(nota_segundo_parcial(input.value));
+       }
+    }
+  }
+
+  function validate_suma(validators, value) {
+    var valid = true;
+    $(validators).each(function() {
+        if (!this.valid(value)) {
+            return valid = false;
+        }
+    });
+    return valid;
+  }
+  
+  function sumar_notas(valor1, valor2){
+     suma = parseInt(valor1) + parseInt(valor2);
+     $("#resultadoSumaOutput").append("Suma: ");
+     $("#resultadoSumaOutput").append(suma);
+     if (((valor1>=0)&&(valor1<10))||((valor2>=0)&&(valor2<10))){
+         $("#resultadoTextoOutput").append("Debes recursar la materia porque no superaste el mínimo en al menos un parcial");
+     } else if((suma <= 25)){
+         $("#resultadoTextoOutput").append("Debes recursar la materia");
+     } else if((suma > 25) && (suma<=60)){
+         $("#resultadoTextoOutput").append("Debes dar el examen para aprobar la materia");
+     } else if(suma < 100){
+         $("#resultadoTextoOutput").append("Exoneraste! Un examen menos que dar");
+     }
+  }
+
+  function evaluar_resultado() {
+    $("#resultadoSumaOutput").empty();
+    $("#resultadoTextoOutput").empty();
+    if(($("#primerParcialInput").val()==="")) {
+       $("#resultadoTextoOutput").append("Debes ingresar las notas de ambos parciales");
+    } else {
+       input1 = $("#primerParcialInput")[0];
+       input2 = $("#segundoParcialInput")[0];
+       var valid1 = validate_suma(validators, input1.value);
+       var valid2 = validate_suma(validators_segundo, input2.value);
+       if (valid1 && valid2 && (input1.value>=0) && (input1.value<=50) && (input2.value>=0) && (input2.value<=50)) {
+           sumar_notas(input1.value, input2.value);
+       } else {
+           $("#resultadoTextoOutput").append("Debes ingresar correctamente las notas de ambos parciales");
+       }
+    }
+  }
+
+  $(document).ready(function() {
+    $("#primerParcialOutput").empty();
+    $("#segundoParcialOutput").empty();
+
+    $("#primerParcialInput").keyup(function(event){
+        if (event.keyCode != 13) {
+            convert_primer_parcial();
+        }
+    });
+    $("#segundoParcialInput").keyup(function(event){
+        if (event.keyCode != 13) {
+            convert_segundo_parcial();
+        }
+    });
+    $("#resultadoForm").submit(function() {
+        evaluar_resultado();
+        return false;
+    });
+  });
+  
+</script>
+<h1>¿Apruebo la materia del liceo?</h1>
+<p id="description">Ingresa las notas de tus parciales y podrás saber si sigues en carrera para aprobar la materia y el resultado final!</p>
+
+<div id="notas">
+    <form id="resultadoForm" action="">
+
+        <div id="primerParcial">
+            <span id="primerParcialLabel" class="output">Nota  primer  parcial:</span>
+            <input id="primerParcialInput" class="input" type="text" />
+            <span id="primerParcialOutput" class="output"></span>
+        </div>
+        <div id="segundoParcial">
+            <span id="segundoParcialLabel" class="output">Nota segundo parcial:</span>
+            <input id="segundoParcialInput" class="input" type="text" />
+            <span id="segundoParcialOutput" class="output"></span>
+        </div>
+        </br>
+        <div id="resultadoBoton">
+            <input type="submit" class="button"  value="Ver resultado!"/>
+        </div>
+        </br>
+        <div id="resultado">
+            <span id="resultadoSumaOutput" class="output"></span>
+            <span id="resultadoTextoOutput" class="output"></span>
+        </div>
+    </form>
+</div>
+</body>
+
+</html>
